@@ -1,0 +1,13 @@
+{
+    "__default__": "hex",
+    "__cmd__": "swaymsg -t get_tree -r | jq -r '.. | select(.type?) | select(.focused==true) | .app_id'",
+    "null": "char",
+    "foot": "hex",
+    "codium": "hex",
+    "chromium-browser": "hex",
+    "org.mozilla.thunderbird": "char",
+    "gedit": "char",
+    "org.kde.kate": "char",
+    "org.kde.kdenlive": "char",
+    "thunar": "char"
+}
