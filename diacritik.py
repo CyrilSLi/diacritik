@@ -56,7 +56,6 @@ app.mainloop ()
 
 if not selecting:
     raise SystemExit
-sel_hex = format (ord (selecting), "04x")
 
 focused = subprocess.run (methods ["__cmd__"], capture_output = True, shell = True)
 focused.check_returncode ()
@@ -66,4 +65,4 @@ method = methods.get (focused, methods ["__default__"])
 if method == "char":
     os.system (f"wtype {selecting}")
 elif method == "hex":
-    subprocess.run ("wtype -M ctrl -M shift -k U -k {} -k {} -k {} -k {} -k Return".format (*sel_hex).split ()).check_returncode ()
+    subprocess.run (f'wtype -M ctrl -M shift -k U -m ctrl -m shift {" -k ".join (hex (ord (selecting)) [2 : ])} -k Return'.split ()).check_returncode ()
