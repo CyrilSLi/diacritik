@@ -9,6 +9,8 @@ Diacritik is a simple Python Tkinter application which provides macOS-style diac
 - requests (only for pinyin)
 - wtype
 
+By default this script uses the **Noto Sans Mono** font which provides good monospace support for both Latin and CJK characters. **Please install the font before running the script**, or change the font at the commented line in `diacritik.py`.
+
 ## Installation
 
 Bind a key combination to the `diacritik.py` script. If you are using a tiling window manager, also set windows with a title of `Diacritik` to floating.
