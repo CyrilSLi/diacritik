@@ -129,7 +129,7 @@ def key_pinyin (event, key):
             pys ["unmatched"] += key
         elif key in "123456789":
             key = int (key) - 1
-            if len (pys ["options"]) > key + 1 and pys ["options"] [key] [1] > 0:
+            if len (pys ["options"]) > key and pys ["options"] [key] [1] > 0:
                 pys ["matched"] += pys ["options"] [key] [0]
                 pys ["unmatched"] = pys ["unmatched"] [pys ["options"] [key] [1] : ]
         else:
