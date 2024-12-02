@@ -102,6 +102,7 @@ def key_user (event, key):
         selecting = key
     else:
         key_label.config (text = f"{key} not found", fg = "red")
+        opt_label.config (text = "[ ]" * 10)
 
 def key_pinyin (event, key):
     global selecting, pys, app
@@ -127,12 +128,19 @@ def key_pinyin (event, key):
                 return
         elif key in "abcdefghijklmnopqrstuvwxyz":
             pys ["unmatched"] += key
-        elif key in "123456789":
+        elif key in "123456789" and selecting and pys ["unmatched"]:
             key = int (key) - 1
             if len (pys ["options"]) > key and pys ["options"] [key] [1] > 0:
                 pys ["matched"] += pys ["options"] [key] [0]
                 pys ["unmatched"] = pys ["unmatched"] [pys ["options"] [key] [1] : ]
+            else:
+                pys ["unmatched"] = ""
         else:
+            selecting = False
+            key_user (event, key)
+            pys ["unmatched"] = selecting if selecting else ""
+            if selecting:
+                pys ["options"] = [[i, 1] for i in key_map [selecting]] + [["", 0] for i in range (9 - len (key_map [selecting]))]
             return
 
     pys ["options"] = req_pinyin ()
@@ -142,7 +150,7 @@ def key_pinyin (event, key):
         opt_label.config (text = "[" + "][".join ([i [0] for i in pys ["options"]] + [str (pys ["page"] if pys ["options"] [0] [0].strip () else " ")]) + "]")
 
 def display_key (event):
-    global first_key, mode, app, selecting
+    global mode, app, selecting
 
     if event.keysym in ("Control_L", "Control_R"):
         mode = {"user": "pinyin", "pinyin": "user"} [mode]
@@ -151,7 +159,6 @@ def display_key (event):
     elif mode == "pinyin" and event.keysym in ("Up", "Down", "Left", "Right", "BackSpace"): # Passthrough for pinyin
         key_pinyin (event, event.keysym)
         return
-    first_key = False
 
     key = event.char
     if not key:
