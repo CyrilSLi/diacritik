@@ -1,5 +1,5 @@
-import json, os, subprocess, sys, time, tkinter as tk
-global mode
+import json, os, subprocess, sys, threading, time, tkinter as tk
+global mode, threadpool
 
 # Ensure only one instance is running
 def excepthook (exc_type, exc_value, exc_traceback):
@@ -40,7 +40,7 @@ opt_label = tk.Label (app)
 
 pys = {} # Pinyin State
 def setup ():
-    global pys, selecting, app
+    global pys, selecting, app, threadpool
     selecting = False
     pys.update ({ # Pinyin State
         "page": 1,
@@ -49,6 +49,7 @@ def setup ():
         "unmatched": "",
         "cache": pys.get ("cache", {}) # Preserve cache across mode switches
     })
+    threadpool = []
     key_label.config (text = mode_text (), fg = "black", font = mode_font ())
     opt_label.config (text = "[ ]" * 10, fg = "black", font = mode_font ())
 
@@ -56,34 +57,49 @@ setup ()
 key_label.pack ()
 opt_label.pack ()
 
-def req_pinyin ():
+def req_pinyin (chars):
     import requests as r
-    global pys, app
+    global pys, app, selecting
+    # print ("req_pinyin", chars)
 
-    if not pys ["unmatched"]:
+    if not chars:
         pys ["page"] = 1
-        return [[" ", 0] for i in range (9)]
+        options = [[" ", 0] for i in range (9)]
+    else:
+        offset = pys ["page"] * 9
+        if chars not in pys ["cache"] or len (pys ["cache"] [chars]) < offset:
+            try:
+                res = r.get ("https://inputtools.google.com/request?text={}&itc=zh-t-i0-pinyin&num={}&ie=utf-8&oe=utf-8".format (
+                    chars, str (offset)
+                )).json ()
+                if res [0] != "SUCCESS":
+                    raise Exception
+            except:
+                key_label.config (text = "Failed to fetch pinyin", fg = "red")
+                return
 
-    offset = pys ["page"] * 9
-    if pys ["unmatched"] not in pys ["cache"] or len (pys ["cache"] [pys ["unmatched"]]) < offset:
-        try:
-            res = r.get ("https://inputtools.google.com/request?text={}&itc=zh-t-i0-pinyin&num={}&ie=utf-8&oe=utf-8".format (
-                pys ["unmatched"], str (offset)
-            )).json ()
-            if res [0] != "SUCCESS":
-                raise Exception
-        except:
-            key_label.config (text = "Failed to fetch pinyin", fg = "red")
-            return
+            offset = min (offset, len (res [1] [0] [1]))
+            cache = [[res [1] [0] [1] [i], res [1] [0] [3].get ("matched_length", [len (chars)] * offset) [i]] for i in range (offset)]
+            cache.extend ([[" ", 0] for i in range (8 - (len (cache) - 1))]) # Pad to 9
+            offset = len (cache)
+            pys ["page"] = -(-offset // 9)
+            pys ["cache"] [chars] = cache
+        options = pys ["cache"] [chars] [offset - 9 : offset]
 
-        offset = min (offset, len (res [1] [0] [1]))
-        cache = [[res [1] [0] [1] [i], res [1] [0] [3].get ("matched_length", [len (pys ["unmatched"])] * offset) [i]] for i in range (offset)]
-        cache.extend ([[" ", 0] for i in range (8 - (len (cache) - 1))]) # Pad to 9
-        offset = len (cache)
-        pys ["page"] = -(-offset // 9)
-        pys ["cache"] [pys ["unmatched"]] = cache
+    pys ["options"] = options
+    if pys ["options"]:
+        selecting = pys ["matched"] + pys ["unmatched"]
+        key_label.config (text = selecting, fg = "black")
+        opt_label.config (text = "[" + "][".join ([i [0] for i in pys ["options"]] + [str (pys ["page"] if pys ["options"] [0] [0].strip () else " ")]) + "]")
+    # print ("req_pinyin finished", chars)
 
-    return pys ["cache"] [pys ["unmatched"]] [offset - 9 : offset]
+def update_pool ():
+    global pys, threadpool
+    while threadpool:
+        threadpool = [t for t in threadpool if t.is_alive ()]
+        time.sleep (0.1)
+    # print ("Pool cleared")
+    req_pinyin (pys ["unmatched"])
 
 def key_user (event, key):
     global selecting, key_map, app
@@ -105,7 +121,7 @@ def key_user (event, key):
         opt_label.config (text = "[ ]" * 10)
 
 def key_pinyin (event, key):
-    global selecting, pys, app
+    global selecting, pys, app, threadpool
 
     if key in ("Up", "Left"):
         if len (pys ["options"]) > 1 and pys ["page"] > 1:
@@ -143,11 +159,11 @@ def key_pinyin (event, key):
                 pys ["options"] = [[i, 1] for i in key_map [selecting]] + [["", 0] for i in range (9 - len (key_map [selecting]))]
             return
 
-    pys ["options"] = req_pinyin ()
-    if pys ["options"]:
-        selecting = pys ["matched"] + pys ["unmatched"]
-        key_label.config (text = selecting, fg = "black")
-        opt_label.config (text = "[" + "][".join ([i [0] for i in pys ["options"]] + [str (pys ["page"] if pys ["options"] [0] [0].strip () else " ")]) + "]")
+    t = threading.Thread (target = req_pinyin, args = (pys ["unmatched"], ))
+    t.start ()
+    threadpool.append (t)
+    if len (threadpool) == 1:
+        threading.Thread (target = update_pool).start () # Resolve out-of-sync issues
 
 def display_key (event):
     global mode, app, selecting
