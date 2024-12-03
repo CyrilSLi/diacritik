@@ -68,7 +68,7 @@ def req_pinyin (chars):
         pys ["unmatched"] = ""
         key_label.config (text = pys ["matched"], fg = "black")
         opt_label.config (text = "Raw Input Mode")
-        selecting = False
+        selecting = pys ["matched"]
         return
     elif not chars:
         pys ["page"] = 1
