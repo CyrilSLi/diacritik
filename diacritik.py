@@ -47,6 +47,7 @@ def setup ():
         "options": [], # [[char, length], ...]
         "matched": "",
         "unmatched": "",
+        "raw_input": False,
         "cache": pys.get ("cache", {}) # Preserve cache across mode switches
     })
     threadpool = []
@@ -62,7 +63,14 @@ def req_pinyin (chars):
     global pys, app, selecting
     # print ("req_pinyin", chars)
 
-    if not chars:
+    if pys ["raw_input"]:
+        pys ["matched"] = chars
+        pys ["unmatched"] = ""
+        key_label.config (text = pys ["matched"], fg = "black")
+        opt_label.config (text = "Raw Input Mode")
+        selecting = False
+        return
+    elif not chars:
         pys ["page"] = 1
         options = [[" ", 0] for i in range (9)]
     else:
@@ -123,7 +131,10 @@ def key_user (event, key):
 def key_pinyin (event, key):
     global selecting, pys, app, threadpool
 
-    if key in ("Up", "Left"):
+    if pys ["raw_input"] and key not in ("Tab", "BackSpace"):
+        req_pinyin (pys ["matched"] + event.char)
+        return
+    elif key in ("Up", "Left"):
         if len (pys ["options"]) > 1 and pys ["page"] > 1:
             pys ["page"] -= 1
         else:
@@ -133,6 +144,13 @@ def key_pinyin (event, key):
             pys ["page"] += 1
         else:
             return
+    elif key == "Tab":
+        pys ["raw_input"] = not pys ["raw_input"]
+        if pys ["raw_input"]:
+            req_pinyin (pys ["matched"] + pys ["unmatched"])
+        else:
+            req_pinyin ("")
+        return
     else:
         pys ["page"] = 1
         if key == "BackSpace":
@@ -141,6 +159,9 @@ def key_pinyin (event, key):
             elif pys ["matched"]:
                 pys ["matched"] = pys ["matched"] [ : -1]
             else:
+                return
+            if pys ["raw_input"]:
+                req_pinyin (pys ["matched"])
                 return
         elif key in "abcdefghijklmnopqrstuvwxyz":
             pys ["unmatched"] += key
@@ -172,7 +193,7 @@ def display_key (event):
         mode = {"user": "pinyin", "pinyin": "user"} [mode]
         setup ()
         return
-    elif mode == "pinyin" and event.keysym in ("Up", "Down", "Left", "Right", "BackSpace"): # Passthrough for pinyin
+    elif mode == "pinyin" and event.keysym in ("Up", "Down", "Left", "Right", "BackSpace", "Tab"): # Passthrough for pinyin
         key_pinyin (event, event.keysym)
         return
 
