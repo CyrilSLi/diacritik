@@ -107,7 +107,7 @@ def update_pool ():
         threadpool = [t for t in threadpool if t.is_alive ()]
         time.sleep (0.1)
     # print ("Pool cleared")
-    req_pinyin (pys ["unmatched"])
+    req_pinyin (pys [("unmatched", "matched") [pys ["raw_input"]]])
 
 def key_user (event, key):
     global selecting, key_map, app

@@ -58,7 +58,7 @@ This mode uses the Google Pinyin endpoint to input (currently only Simplified Ch
 
 ### User flow
 
-- Enter a letter in the alphabet.
+- Enter a letter in the alphabet, or another key to temporarily switch to user mode.
 - The chacter options (max length 9) will be displayed, with the 10th space representing the current page number.
 - Do one of the following, or keep typing letters to match longer pinyin sequences:
   - Press the `down` or `right` arrow keys to go to the next page, **or**
@@ -66,3 +66,7 @@ This mode uses the Google Pinyin endpoint to input (currently only Simplified Ch
   - Press the number key (1-9) corresponding to a match, which adds the matched character(s) to a buffer, **or**
   - Press `enter` to type out the buffer along with any unmatched letters, **or**
   - Press `backspace` to remove unmatched letters (or the buffer if there are no unmatched letters)
+
+### Raw Input Mode
+
+In pinyin mode, press `tab` to switch to and from raw input mode. In raw input mode everything is typed out as-is without any processing. This can be useful for typing out mixed Chinese and English phrases.
