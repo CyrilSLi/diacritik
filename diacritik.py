@@ -1,4 +1,9 @@
-import json, os, subprocess, sys, threading, time, tkinter as tk
+import tkinter as tk
+app = tk.Tk ()
+app.title ("Diacritik")
+app.update ()
+
+import json, os, subprocess, sys, threading, time
 global mode, threadpool
 
 # Ensure only one instance is running
@@ -31,10 +36,7 @@ with open (os.path.join (os.path.dirname (os.path.abspath (__file__)), "keymap.j
 with open (os.path.join (os.path.dirname (os.path.abspath (__file__)), "methods.json")) as f:
     methods = json.load (f)
 
-app = tk.Tk ()
-app.title ("Diacritik")
 app.configure (padx = 10, pady = 10)
-
 key_label = tk.Label (app)
 opt_label = tk.Label (app)
 
@@ -187,9 +189,9 @@ def key_pinyin (event, key):
         threading.Thread (target = update_pool).start () # Resolve out-of-sync issues
 
 def display_key (event):
-    global mode, app, selecting
+    global mode, app, selecting, pys
 
-    if event.keysym in ("Control_L", "Control_R"):
+    if event.keysym in ("Control_L", "Control_R") and not pys ["raw_input"]:
         mode = {"user": "pinyin", "pinyin": "user"} [mode]
         setup ()
         return
