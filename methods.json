@@ -9,5 +9,12 @@
     "gedit": "char",
     "org.kde.kate": "char",
     "org.kde.kdenlive": "char",
-    "thunar": "char"
+    "thunar": "char",
+    "libreoffice-writer": "char",
+    "libreoffice-calc": "char",
+    "libreoffice-impress": "char",
+    "libreoffice-draw": "char",
+    "libreoffice-math": "char",
+    "libreoffice-base": "char",
+    "libreoffice-startcenter": "char"
 }
