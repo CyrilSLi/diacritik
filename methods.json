@@ -10,11 +10,32 @@
     "org.kde.kate": "char",
     "org.kde.kdenlive": "char",
     "thunar": "char",
-    "libreoffice-writer": "char",
-    "libreoffice-calc": "char",
-    "libreoffice-impress": "char",
-    "libreoffice-draw": "char",
-    "libreoffice-math": "char",
-    "libreoffice-base": "char",
-    "libreoffice-startcenter": "char"
+    "libreoffice-writer": {
+        "method": "char",
+        "delay": 0.1
+    },
+    "libreoffice-calc": {
+        "method": "char",
+        "delay": 0.1
+    },
+    "libreoffice-impress": {
+        "method": "char",
+        "delay": 0.1
+    },
+    "libreoffice-draw": {
+        "method": "char",
+        "delay": 0.1
+    },
+    "libreoffice-math": {
+        "method": "char",
+        "delay": 0.1
+    },
+    "libreoffice-base": {
+        "method": "char",
+        "delay": 0.1
+    },
+    "libreoffice-startcenter": {
+        "method": "char",
+        "delay": 0.1
+    }
 }

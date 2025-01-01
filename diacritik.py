@@ -213,6 +213,7 @@ def display_key (event):
 
 app.bind ("<Key>", display_key)
 app.mainloop ()
+delay = 0.05 # Delay between characters
 
 with open ("/tmp/diacritik/mode", "w") as f:
     f.write (mode)
@@ -225,9 +226,12 @@ focused.check_returncode ()
 focused = focused.stdout.decode ().strip ()
 method = methods.get (focused, methods ["__default__"])
 
+if type (method) == dict:
+    method, delay = method.get ("method", methods ["__default__"]), method.get ("delay", delay)
+
 for i in selecting:
     if method == "char":
         os.system (f"wtype {i}")
     elif method == "hex":
         subprocess.run (f'wtype -M ctrl -M shift -k U -m ctrl -m shift {" -k ".join (hex (ord (i)) [2 : ])} -k Return'.split ()).check_returncode ()
-    time.sleep (0.05)
+    time.sleep (delay)
