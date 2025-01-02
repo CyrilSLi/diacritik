@@ -3,8 +3,8 @@ app = tk.Tk ()
 app.title ("Diacritik")
 app.update ()
 
-import json, os, subprocess, sys, threading, time
-global mode, threadpool
+import json, os, shlex, subprocess, requests as r, sys, threading, time
+global mode, threadpool, r
 
 # Ensure only one instance is running
 def excepthook (exc_type, exc_value, exc_traceback):
@@ -60,10 +60,40 @@ setup ()
 key_label.pack ()
 opt_label.pack ()
 
+def google_pinyin (chars, offset):
+    global r
+    res = r.get ("https://inputtools.google.com/request?text={}&itc=zh-t-i0-pinyin&num={}&ie=utf-8&oe=utf-8".format (
+        chars, str (offset)
+    )).json ()
+    if res [0] != "SUCCESS":
+        raise Exception
+    offset = min (offset, len (res [1] [0] [1]))
+    cache = [[res [1] [0] [1] [i], res [1] [0] [3].get ("matched_length", [len (chars)] * offset) [i]] for i in range (offset)]
+    return offset, cache
+
+def baidu_pinyin (chars, offset):
+    global r
+    res = r.get ("https://olime.baidu.com/py?input={}&inputtype=py".format (
+        chars
+    )).json () ["0"] [0]
+    offset = min (offset, len (res))
+    cache = [[res [i] [0], len (chars)] for i in range (offset)] # Always full match
+    return offset, cache
+
+pinyin_providers = ("google", "baidu")
+provider_funcs = {
+    "google": google_pinyin,
+    "baidu": baidu_pinyin
+}
+pinyin_provider = methods.get ("__pinyin_provider__", "google").lower ()
+
+def next_provider ():
+    global pinyin_providers, pinyin_provider
+    pinyin_provider = pinyin_providers [(pinyin_providers.index (pinyin_provider) + 1) % len (pinyin_providers)]
+    key_label.config (text = f"Using {pinyin_provider} pinyin", fg = "black")
+
 def req_pinyin (chars):
-    import requests as r
-    global pys, app, selecting
-    # print ("req_pinyin", chars)
+    global pys, app, pinyin_provider, provider_funcs, selecting
 
     if pys ["raw_input"]:
         pys ["matched"] = chars
@@ -79,17 +109,11 @@ def req_pinyin (chars):
         offset = pys ["page"] * 9
         if chars not in pys ["cache"] or len (pys ["cache"] [chars]) < offset:
             try:
-                res = r.get ("https://inputtools.google.com/request?text={}&itc=zh-t-i0-pinyin&num={}&ie=utf-8&oe=utf-8".format (
-                    chars, str (offset)
-                )).json ()
-                if res [0] != "SUCCESS":
-                    raise Exception
-            except:
+                offset, cache = provider_funcs [pinyin_provider] (chars, offset)
+            except Exception as e:
                 key_label.config (text = "Failed to fetch pinyin", fg = "red")
                 return
 
-            offset = min (offset, len (res [1] [0] [1]))
-            cache = [[res [1] [0] [1] [i], res [1] [0] [3].get ("matched_length", [len (chars)] * offset) [i]] for i in range (offset)]
             cache.extend ([[" ", 0] for i in range (8 - (len (cache) - 1))]) # Pad to 9
             offset = len (cache)
             pys ["page"] = -(-offset // 9)
@@ -195,6 +219,9 @@ def display_key (event):
         mode = {"user": "pinyin", "pinyin": "user"} [mode]
         setup ()
         return
+    elif event.keysym in ("Alt_L", "Alt_R") and not pys ["raw_input"]:
+        next_provider ()
+        return
     elif mode == "pinyin" and event.keysym in ("Up", "Down", "Left", "Right", "BackSpace", "Tab"): # Passthrough for pinyin
         key_pinyin (event, event.keysym)
         return
@@ -231,7 +258,7 @@ if type (method) == dict:
 
 for i in selecting:
     if method == "char":
-        os.system (f"wtype {i}")
+        subprocess.run (["wtype", "--", i])
     elif method == "hex":
-        subprocess.run (f'wtype -M ctrl -M shift -k U -m ctrl -m shift {" -k ".join (hex (ord (i)) [2 : ])} -k Return'.split ()).check_returncode ()
+        subprocess.run (f'wtype -M ctrl -M shift -k U -m ctrl -m shift {" -k ".join (hex (ord (i)) [2 : ])} -k Return'.split ())
     time.sleep (delay)
