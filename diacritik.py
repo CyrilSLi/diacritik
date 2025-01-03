@@ -88,9 +88,10 @@ provider_funcs = {
 pinyin_provider = methods.get ("__pinyin_provider__", "google").lower ()
 
 def next_provider ():
-    global pinyin_providers, pinyin_provider
+    global pinyin_providers, pinyin_provider, pys
     pinyin_provider = pinyin_providers [(pinyin_providers.index (pinyin_provider) + 1) % len (pinyin_providers)]
-    key_label.config (text = f"Using {pinyin_provider} pinyin", fg = "black")
+    opt_label.config (text = f"Using {pinyin_provider} pinyin")
+    pys ["cache"] = {} # Clear cache
 
 def req_pinyin (chars):
     global pys, app, pinyin_provider, provider_funcs, selecting
