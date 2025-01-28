@@ -220,7 +220,7 @@ def display_key (event):
         mode = {"user": "pinyin", "pinyin": "user"} [mode]
         setup ()
         return
-    elif event.keysym in ("Alt_L", "Alt_R") and not pys ["raw_input"]:
+    elif mode == "pinyin" and event.keysym in ("Alt_L", "Alt_R") and not pys ["raw_input"]:
         next_provider ()
         return
     elif mode == "pinyin" and event.keysym in ("Up", "Down", "Left", "Right", "BackSpace", "Tab"): # Passthrough for pinyin
