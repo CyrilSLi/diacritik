@@ -1,6 +1,7 @@
 {
     "__default__": "hex",
     "__cmd__": "swaymsg -t get_tree -r | jq -r '.. | select(.type?) | select(.focused==true) | .app_id'",
+    "__copy__": "wl-copy",
     "__pinyin_provider__": "google",
     "null": "char",
     "foot": "char",

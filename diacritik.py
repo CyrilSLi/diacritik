@@ -3,8 +3,8 @@ app = tk.Tk ()
 app.title ("Diacritik")
 app.update ()
 
-import json, os, shlex, subprocess, requests as r, sys, threading, time
 global mode, threadpool, r
+import json, os, subprocess, requests as r, sys, threading, time
 
 # Ensure only one instance is running
 def excepthook (exc_type, exc_value, exc_traceback):
@@ -233,6 +233,8 @@ def display_key (event):
     elif ord (key) in (13, 27): # Enter or Escape
         if ord (key) == 27:
             selecting = False
+        elif event.state & 0x1: # Shift
+            _ = subprocess.run (methods ["__copy__"], input = selecting.encode (), shell = True).check_returncode ()
         app.destroy ()
         return
     elif ord (key) < 32 or ord (key) > 126:
