@@ -260,8 +260,8 @@ if type (method) == dict:
     method, delay = method.get ("method", methods ["__default__"]), method.get ("delay", delay)
 
 for i in selecting:
+    time.sleep (delay)
     if method == "char":
         subprocess.run (["wtype", "--", i])
     elif method == "hex":
         subprocess.run (f'wtype -M ctrl -M shift -k U -m ctrl -m shift {" -k ".join (hex (ord (i)) [2 : ])} -k Return'.split ())
-    time.sleep (delay)
