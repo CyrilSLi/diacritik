@@ -7,7 +7,7 @@
     "foot": "char",
     "codium": "hex",
     "chromium-browser": "hex",
-    "org.mozilla.thunderbird": "char",
+    "net.thunderbird.Thunderbird": "char",
     "gedit": "char",
     "org.kde.kate": "char",
     "org.kde.kdenlive": "char",
