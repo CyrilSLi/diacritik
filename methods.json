@@ -1,6 +1,6 @@
 {
     "__default__": "hex",
-    "__cmd__": "swaymsg -t get_tree -r | jq -r '.. | select(.type?) | select(.focused==true) | .app_id'",
+    "__cmd__": "swaymsg -t get_tree -r | jq -r '.. | select(.type?) | select(.focused==true) | (.app_id // .window_properties.class)'",
     "__copy__": "wl-copy",
     "__pinyin_provider__": "google",
     "null": "char",
@@ -37,6 +37,10 @@
         "delay": 0.1
     },
     "libreoffice-startcenter": {
+        "method": "char",
+        "delay": 0.1
+    },
+    "org-openstreetmap-josm-gui-MainApplication": {
         "method": "char",
         "delay": 0.1
     }
