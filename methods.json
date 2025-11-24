@@ -12,6 +12,10 @@
     "org.kde.kate": "char",
     "org.kde.kdenlive": "char",
     "thunar": "char",
+    "wechat": {
+        "method": "char",
+        "delay": 0.1
+    },
     "libreoffice-writer": {
         "method": "char",
         "delay": 0.1
